@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { Download, Github, Minus, Plus, Upload } from "lucide-react";
+import { Download, Github, Minus, Plus, Upload, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { Switch } from "@/components/ui/switch";
+import { useSfx } from "@/hooks/use-sfx";
+import { useSfxStore } from "@/lib/sfx-store";
 import { useImportData, useStudyData, useUpdateSettings } from "@/features/core/queries";
 import type { StudyData } from "@/features/core/types";
 
@@ -26,6 +30,36 @@ function unwrapBackup(value: unknown): StudyData | null {
   if (!Array.isArray(resources) || !Array.isArray(deadlines)) return null;
   if (!settings || typeof settings !== "object") return null;
   return { activities, sessions, resources, deadlines, settings } as StudyData;
+}
+
+function SoundToggle() {
+  const enabled = useSfxStore((s) => s.enabled);
+  const setEnabled = useSfxStore((s) => s.setEnabled);
+  const { confirm } = useSfx();
+
+  const toggle = (next: boolean) => {
+    setEnabled(next);
+    if (next) confirm();
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-2">
+        {enabled ? (
+          <Volume2 className="size-4 text-muted-foreground" />
+        ) : (
+          <VolumeX className="size-4 text-muted-foreground" />
+        )}
+        <span className="text-sm font-medium">Sonidos de interfaz</span>
+      </div>
+      <Switch
+        checked={enabled}
+        onCheckedChange={toggle}
+        aria-label="Sonidos de interfaz"
+        data-sfx="none"
+      />
+    </div>
+  );
 }
 
 function WeeklyGoalField() {
@@ -140,56 +174,61 @@ export function SettingsDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Ajustes</DialogTitle>
-        </DialogHeader>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      preventAutoFocus
+      className="sm:max-w-sm"
+    >
+      <DialogHeader>
+        <DialogTitle>Ajustes</DialogTitle>
+      </DialogHeader>
 
-        <WeeklyGoalField />
+      <WeeklyGoalField />
 
-        <div className="space-y-2 pt-3">
-          <Button
-            variant="secondary"
-            className="w-full justify-start gap-2"
-            disabled={!data}
-            data-sfx="confirm"
-            onClick={exportData}
-          >
-            <Download className="size-4" />
-            Exportar datos
-          </Button>
-          <Button
-            variant="secondary"
-            className="w-full justify-start gap-2"
-            data-sfx="confirm"
-            onClick={() => fileRef.current?.click()}
-          >
-            <Upload className="size-4" />
-            Importar datos
-          </Button>
-        </div>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="application/json,.json"
-          className="hidden"
-          onChange={(e) => onFile(e.target.files?.[0] ?? null)}
-        />
+      <SoundToggle />
 
-        <div className="border-t border-border pt-4 text-xs text-muted-foreground">
-          Desarrollado por{" "}
-          <a
-            href="https://github.com/4kPablo"
-            target="_blank"
-            rel="noreferrer"
-            className="font-medium text-foreground transition-colors hover:text-primary"
-          >
-            <Github className="mr-1 inline-block size-3.5 -translate-y-px align-middle" />
-            Pablo Estigarribia
-          </a>
-        </div>
-      </DialogContent>
-    </Dialog>
+      <div className="space-y-2 pt-3">
+        <Button
+          variant="secondary"
+          className="w-full justify-start gap-2"
+          disabled={!data}
+          data-sfx="confirm"
+          onClick={exportData}
+        >
+          <Download className="size-4" />
+          Exportar datos
+        </Button>
+        <Button
+          variant="secondary"
+          className="w-full justify-start gap-2"
+          data-sfx="confirm"
+          onClick={() => fileRef.current?.click()}
+        >
+          <Upload className="size-4" />
+          Importar datos
+        </Button>
+      </div>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={(e) => onFile(e.target.files?.[0] ?? null)}
+      />
+
+      <div className="border-t border-border pt-4 text-xs text-muted-foreground">
+        Desarrollado por{" "}
+        <a
+          href="https://github.com/4kPablo"
+          target="_blank"
+          rel="noreferrer"
+          className="font-medium text-foreground transition-colors hover:text-primary"
+        >
+          <Github className="mr-1 inline-block size-3.5 -translate-y-px align-middle" />
+          Pablo Estigarribia
+        </a>
+      </div>
+    </ResponsiveDialog>
   );
 }

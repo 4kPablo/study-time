@@ -225,6 +225,33 @@ export function buildMonthlyHeat(sessions: Session[], range: CalendarRange): Mon
   return months.reverse();
 }
 
+/** Continuous GitHub-style grid: weeks (Mon–Sun) oldest→newest, no month grouping. */
+export function buildGitHubHeat(sessions: Session[], range: CalendarRange): WeekDay[][] {
+  const start = startOfWeek(rangeStart(range, sessions), { weekStartsOn: 1 });
+  const today = todayKey();
+  const byDay = totalsByDay(sessions);
+  const weeks: WeekDay[][] = [];
+  for (let weekStart = start; weekStart <= new Date(); weekStart = addDays(weekStart, 7)) {
+    const week: WeekDay[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = addDays(weekStart, i);
+      const key = format(date, "yyyy-MM-dd");
+      const list = byDay.get(key) ?? [];
+      const minutes = sumMinutes(list);
+      week.push({
+        date,
+        key,
+        minutes,
+        sessions: list,
+        level: intensityLevel(minutes),
+        future: key > today,
+      });
+    }
+    weeks.push(week);
+  }
+  return weeks;
+}
+
 export function weeklySeries(sessions: Session[], weeks = 12) {
   const start = startOfWeek(subDays(new Date(), weeks * 7), { weekStartsOn: 1 });
   const buckets = new Map<string, number>();

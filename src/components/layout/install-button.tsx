@@ -1,74 +1,33 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
-
-function isStandalone(): boolean {
-  if (typeof window === "undefined") return false;
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true
-  );
-}
-
-function isIos(): boolean {
-  if (typeof window === "undefined") return false;
-  return /iPad|iPhone|iPod/.test(window.navigator.userAgent);
-}
+import { useInstallPrompt } from "@/hooks/use-install-prompt";
 
 /** Shows an install button when the browser supports installing (Chromium), or
  *  a short iOS hint (Safari has no `beforeinstallprompt`). Hidden once installed. */
 export function InstallButton() {
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
-  const [installed, setInstalled] = useState(false);
+  const { canInstall, ios, installed, prompt } = useInstallPrompt();
   const [iosOpen, setIosOpen] = useState(false);
-
-  useEffect(() => {
-    if (isStandalone()) {
-      setInstalled(true);
-      return;
-    }
-    const onPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferred(e as BeforeInstallPromptEvent);
-    };
-    const onInstalled = () => {
-      setInstalled(true);
-      setDeferred(null);
-    };
-    window.addEventListener("beforeinstallprompt", onPrompt);
-    window.addEventListener("appinstalled", onInstalled);
-    return () => {
-      window.removeEventListener("beforeinstallprompt", onPrompt);
-      window.removeEventListener("appinstalled", onInstalled);
-    };
-  }, []);
 
   if (installed) return null;
 
-  if (deferred) {
+  if (canInstall) {
     return (
       <Button
         variant="ghost"
         size="icon"
         aria-label="Instalar app"
         data-sfx="none"
-        onClick={() => {
-          void deferred.prompt();
-        }}
+        onClick={() => void prompt()}
       >
         <Download className="size-4" />
       </Button>
     );
   }
 
-  if (isIos()) {
+  if (ios) {
     return (
       <Popover open={iosOpen} onOpenChange={setIosOpen}>
         <PopoverTrigger asChild>

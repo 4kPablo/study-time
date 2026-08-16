@@ -7,16 +7,10 @@ import { toast } from "sonner";
 
 import { InlineEdit } from "@/components/common/inline-edit";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import {
   Select,
   SelectContent,
@@ -253,14 +247,17 @@ function ManualSessionDialog({
   const activityId = values.activityId || activities[0]?.id || "";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="h-9 gap-1.5" data-sfx="confirm">
-          <Plus className="size-4" />
-          Añadir
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-sm">
+    <>
+      <Button
+        size="sm"
+        className="h-9 w-full gap-1.5 sm:w-auto"
+        data-sfx="confirm"
+        onClick={() => onOpenChange(true)}
+      >
+        <Plus className="size-4" />
+        Añadir
+      </Button>
+      <ResponsiveDialog open={open} onOpenChange={onOpenChange} className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Añadir sesión</DialogTitle>
         </DialogHeader>
@@ -339,7 +336,7 @@ function ManualSessionDialog({
             Guardar
           </Button>
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialog>
+    </>
   );
 }

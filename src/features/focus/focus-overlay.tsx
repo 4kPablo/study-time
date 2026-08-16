@@ -49,18 +49,23 @@ export function FocusOverlay({ activityName, onFinish }: Props) {
             {now === null ? "--:--" : format(now, "HH:mm")}
           </p>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center gap-3 max-[380px]:w-full max-[380px]:flex-col max-[380px]:items-stretch">
             <Button
               variant="secondary"
               size="lg"
               onClick={toggle}
               data-sfx="toggle"
-              className="min-w-36 gap-2"
+              className="min-w-32 gap-2 max-[380px]:w-full sm:min-w-36"
             >
               {paused ? <Play className="size-4" /> : <Pause className="size-4" />}
               {paused ? "Reanudar" : "Pausar"}
             </Button>
-            <Button size="lg" onClick={onFinish} data-sfx="cancel" className="min-w-36 gap-2">
+            <Button
+              size="lg"
+              onClick={onFinish}
+              data-sfx="cancel"
+              className="min-w-32 gap-2 max-[380px]:w-full sm:min-w-36"
+            >
               <Square className="size-4" />
               Finalizar
             </Button>

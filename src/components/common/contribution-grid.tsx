@@ -1,10 +1,11 @@
-import { useMemo, useState, type FocusEvent, type MouseEvent } from "react";
+import { Fragment, useMemo, useState, type FocusEvent, type MouseEvent } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Flame } from "lucide-react";
 
 import { LEVEL_BG } from "@/features/core/category-styles";
 import {
+  buildGitHubHeat,
   buildMonthlyHeat,
   buildWeek,
   currentStreak,
@@ -31,6 +32,9 @@ interface HoverState {
   x: number;
   y: number;
 }
+
+/** Most recent weeks shown on mobile (fits ~320px at 14px squares + 3px gaps). */
+const MAX_MOBILE_WEEKS = 15;
 
 export function ContributionGrid({
   sessions,
@@ -71,6 +75,8 @@ function GridCalendar({
   className?: string | undefined;
 }) {
   const months = useMemo(() => buildMonthlyHeat(sessions, range), [sessions, range]);
+  const weeks = useMemo(() => buildGitHubHeat(sessions, range), [sessions, range]);
+  const isPortrait = weeks.length < 7;
   const [hover, setHover] = useState<HoverState | null>(null);
   const today = todayKey();
 
@@ -87,36 +93,39 @@ function GridCalendar({
     onBlur: () => setHover(null),
   });
 
+  const cell = (day: WeekDay, mobile = false) => (
+    <button
+      type="button"
+      aria-label={`${format(day.date, "d 'de' MMMM", { locale: es })}: ${formatMinutes(day.minutes)}`}
+      className={cn(
+        "rounded-[3px] transition-colors duration-150",
+        mobile ? "size-3.5" : "aspect-square w-full",
+        day.future
+          ? "border border-dashed border-border bg-surface-2/50"
+          : "hover:ring-1 hover:ring-ring/60",
+        !day.future && day.level > 0 && LEVEL_BG[day.level],
+        !day.future && day.level === 0 && "bg-surface-2",
+        day.key === today && "ring-1 ring-primary ring-offset-1 ring-offset-background",
+      )}
+      {...hoverProps(day)}
+    />
+  );
+
   return (
     <div className={cn("relative", className)}>
       <div className="space-y-2">
         {months.map((month) => (
-          <div key={month.key} className="flex items-center gap-2 sm:gap-3">
+          <div key={month.key} className="hidden items-center gap-2 sm:flex sm:gap-3">
             <span
               className="w-16 shrink-0 truncate text-[11px] text-muted-foreground sm:w-24 sm:text-xs"
               title={month.label}
             >
               {month.label}
             </span>
-            <div className="grid flex-1 grid-cols-[repeat(31,minmax(0,1fr))] gap-[3px]">
+            <div className="hidden flex-1 grid-cols-[repeat(31,minmax(0,1fr))] gap-[3px] sm:grid">
               {month.days.map((day, i) =>
                 day ? (
-                  <button
-                    key={day.key}
-                    type="button"
-                    aria-label={`${format(day.date, "d 'de' MMMM", { locale: es })}: ${formatMinutes(day.minutes)}`}
-                    className={cn(
-                      "aspect-square w-full rounded-[3px] transition-colors duration-150",
-                      day.future
-                        ? "border border-dashed border-border bg-surface-2/50"
-                        : "hover:ring-1 hover:ring-ring/60",
-                      !day.future && day.level > 0 && LEVEL_BG[day.level],
-                      !day.future && day.level === 0 && "bg-surface-2",
-                      day.key === today &&
-                        "ring-1 ring-primary ring-offset-1 ring-offset-background",
-                    )}
-                    {...hoverProps(day)}
-                  />
+                  <Fragment key={day.key}>{cell(day)}</Fragment>
                 ) : (
                   <div key={`${month.key}-${i}`} />
                 ),
@@ -124,6 +133,19 @@ function GridCalendar({
             </div>
           </div>
         ))}
+      </div>
+
+      <div
+        className={cn(
+          "mx-auto grid w-fit gap-[3px] sm:hidden",
+          isPortrait ? "grid-cols-7" : "grid-flow-col grid-rows-7",
+        )}
+      >
+        {weeks
+          .slice(-MAX_MOBILE_WEEKS)
+          .flatMap((week) =>
+            week.map((day) => <Fragment key={day.key}>{cell(day, true)}</Fragment>),
+          )}
       </div>
 
       <div className="mt-2.5 flex items-center justify-end gap-1.5 text-[11px] text-muted-foreground/70">

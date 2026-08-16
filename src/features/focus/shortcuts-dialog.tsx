@@ -1,4 +1,5 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 
 const SHORTCUTS: Array<[string, string]> = [
   ["Ctrl / ⌘ + N", "Nueva sesión"],
@@ -16,22 +17,20 @@ export function ShortcutsDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Atajos de teclado</DialogTitle>
-        </DialogHeader>
-        <ul className="space-y-2 text-sm">
-          {SHORTCUTS.map(([keys, label]) => (
-            <li key={keys} className="flex items-center justify-between gap-4">
-              <span className="text-muted-foreground">{label}</span>
-              <kbd className="rounded-md border border-border bg-surface-2 px-2 py-1 font-mono text-xs text-foreground">
-                {keys}
-              </kbd>
-            </li>
-          ))}
-        </ul>
-      </DialogContent>
-    </Dialog>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange} className="sm:max-w-sm">
+      <DialogHeader>
+        <DialogTitle>Atajos de teclado</DialogTitle>
+      </DialogHeader>
+      <ul className="space-y-2 text-sm">
+        {SHORTCUTS.map(([keys, label]) => (
+          <li key={keys} className="flex items-center justify-between gap-4">
+            <span className="text-muted-foreground">{label}</span>
+            <kbd className="rounded-md border border-border bg-surface-2 px-2 py-1 font-mono text-xs text-foreground">
+              {keys}
+            </kbd>
+          </li>
+        ))}
+      </ul>
+    </ResponsiveDialog>
   );
 }

@@ -342,7 +342,7 @@ function ResourcesPanel({
                 <Icon className="size-4 text-muted-foreground" />
                 <span className="truncate text-sm">{r.label}</span>
               </a>
-              <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+              <div className="absolute right-2 top-2 flex gap-1 opacity-100 transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100">
                 <button
                   type="button"
                   aria-label="Editar recurso"
@@ -440,7 +440,7 @@ function DeadlinesPanel({
                 {DEADLINE_LABEL[d.kind]}
               </span>
               <span className="flex-1 truncate">{d.title}</span>
-              <span className="text-xs text-muted-foreground">
+              <span className="hidden text-xs text-muted-foreground sm:block">
                 {format(parseISO(d.date), "d MMM yyyy", { locale: es })}
               </span>
               <span className={cn("w-20 text-right font-mono text-xs", urgencyClass(days))}>

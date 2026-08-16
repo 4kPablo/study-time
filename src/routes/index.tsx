@@ -81,7 +81,7 @@ function Dashboard() {
           <Button
             size="sm"
             variant="ghost"
-            className="mt-0.5 h-6 px-2 text-xs text-muted-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            className="mt-0.5 hidden h-6 px-2 text-xs text-muted-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100 sm:block"
             onClick={() => setShowMonth((v) => !v)}
           >
             {showMonth ? "Ocultar mes actual" : "Ver mes actual"}
@@ -90,7 +90,7 @@ function Dashboard() {
       </section>
 
       {showMonth && (
-        <section>
+        <section className="hidden sm:block">
           <ContributionGrid sessions={sessions} range="1m" activityName={activityName} />
         </section>
       )}

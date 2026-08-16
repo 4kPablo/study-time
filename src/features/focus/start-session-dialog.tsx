@@ -46,7 +46,11 @@ export function StartSessionDialog({ open, onOpenChange, activities, onSelect }:
             placeholder="¿Qué vas a hacer ahora?"
           />
           <CommandList className="max-h-80">
-            <CommandEmpty>No hay actividades con ese nombre.</CommandEmpty>
+            <CommandEmpty>
+              {activities.length === 0
+                ? "Todavía no creaste actividades. Andá a Actividades para crear la primera."
+                : "No hay actividades con ese nombre."}
+            </CommandEmpty>
             {grouped.map(({ category, items }) => (
               <CommandGroup key={category.id} heading={category.name}>
                 {items.map((a) => (

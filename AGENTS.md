@@ -1,26 +1,20 @@
-<!-- LOVABLE:BEGIN -->
-
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-
-<!-- LOVABLE:END -->
-
 # Study Time
 
 Local-first, Spanish-language (Argentinian) study-habit tracker. React 19 + TanStack
 Start (file-based routing) + TanStack Query + Tailwind CSS v4 + shadcn/ui
 (`new-york` style, lucide icons), built with the `@lovable.dev/vite-tanstack-config`
-preset. Design intent doc: `.lovable/plan/study-time-2026-08-06.md`.
+preset. Design intent doc: `docs/design.md`.
+
+## Deploy
+
+- Cloudflare Pages (Git integration): build `bun install && bun run build`, output
+  `dist`. See README for the dashboard settings. `vite.config.ts` sets
+  `nitro: { preset: "cloudflare-pages" }` so the SSR worker lands in
+  `dist/_worker.js`; `wrangler.toml` pins the Pages name, output dir and compat flags.
 
 ## Commands
 
-Use **bun** (lockfile is `bun.lock`; the README's `npm i` is stale):
+Use **bun** (lockfile is `bun.lock`):
 
 ```sh
 bun install
@@ -55,11 +49,12 @@ There is no test suite.
 
 ## PWA
 
-- `public/manifest.webmanifest` + `public/sw.js` make the app installable (PNG
-  icons in `public/icons/`). Regenerate icons with `bun scripts/generate-icons.mjs`
-  (dependency-free PNG encoder).
+- `public/site.webmanifest` + `public/sw.js` make the app installable. Favicons
+  and PWA icons live in `public/` (`favicon.ico`, `favicon.svg`,
+  `favicon-96x96.png`, `apple-touch-icon.png`, `logo.png`,
+  `web-app-manifest-192x192.png`, `web-app-manifest-512x512.png`).
 - The service worker registers only in production (`import.meta.env.PROD`), cache
-  name `study-time-v2`. Bump the cache name when changing the precache shell.
+  name `study-time-v3`. Bump the cache name when changing the precache shell.
 - `src/components/layout/install-button.tsx` (in `AppShell`) handles
   `beforeinstallprompt` and shows iOS instructions; keep `window` guards there for SSR.
 

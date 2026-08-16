@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { InlineEdit } from "@/components/common/inline-edit";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import { CATEGORY_DOT } from "@/features/core/category-styles";
 import {
   useAddSession,
   useDeleteSession,
+  useRestoreSession,
   useStudyData,
   useUpdateSession,
 } from "@/features/core/queries";
@@ -57,6 +59,7 @@ function SessionsPage() {
   const { data } = useStudyData();
   const update = useUpdateSession();
   const remove = useDeleteSession();
+  const restore = useRestoreSession();
   const add = useAddSession();
 
   const [category, setCategory] = useState<CategoryId | "todas">("todas");
@@ -195,7 +198,15 @@ function SessionsPage() {
                 aria-label="Eliminar sesión"
                 className="size-7 text-muted-foreground hover:text-destructive"
                 data-sfx="cancel"
-                onClick={() => remove.mutate(s.id)}
+                onClick={() => {
+                  remove.mutate(s.id);
+                  toast.success(`Sesión de ${activityName(s.activityId)} eliminada`, {
+                    action: {
+                      label: "Deshacer",
+                      onClick: () => restore.mutate(s),
+                    },
+                  });
+                }}
               >
                 <Trash2 className="size-3.5" />
               </Button>

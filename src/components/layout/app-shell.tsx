@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Keyboard, Settings, Timer, Volume2, VolumeX } from "lucide-react";
+import { Keyboard, Settings, Volume2, VolumeX } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useSfx } from "@/hooks/use-sfx";
@@ -36,9 +36,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-30 border-b border-border/80 bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-14 w-full max-w-[1400px] items-center gap-6 px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
-            <span className="flex size-6 items-center justify-center rounded-md bg-primary/15">
-              <Timer className="size-3.5 text-primary" />
-            </span>
+            <img
+              src="/logo.png"
+              alt="Study Time"
+              className="size-6 rounded-md object-contain"
+              width={24}
+              height={24}
+            />
             <span className="text-sm font-semibold tracking-tight">Study Time</span>
           </Link>
 

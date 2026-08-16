@@ -12,4 +12,6 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Emit a Cloudflare Pages SSR worker (dist/_worker.js) instead of a Workers deploy config.
+  nitro: { preset: "cloudflare-pages" },
 });

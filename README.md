@@ -1,29 +1,77 @@
-# Welcome to your Lovable project
+# Study Time
 
-This project was built with [Lovable](https://lovable.dev).
+Una web app instalable para registrar y organizar tus sesiones de estudio, mantener una rutina y ver tu progreso.
 
-## Build with Lovable
+Está pensada para reducir la fricción de empezar a estudiar y hacer visible cuánto tiempo realmente le estás dedicando (o no).
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+## ✨ Funciones
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+* ⏱️ Cronómetro de concentración.
+* 🎯 Objetivo semanal (en horas) configurable.
+* ✏️ Registro de sesiones sin necesidad de usar el cronómetro.
+* 📊 Estadísticas para entender tus hábitos y evolución.
+* 🔥 Racha y progreso respecto al objetivo semanal.
+* 🗓️ Calendario de actividad inspirado en GitHub, según el esfuerzo realizado cada día.
+* 📚 Actividades y recursos personalizados.
+* 📱 PWA instalable y usable offline.
+* 💾 Exportación e importación de datos para crear respaldos.
 
-## Development
+## 🔒 Datos y privacidad
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Los datos se guardan localmente en el navegador. No hay cuentas y no se envían datos a ningún servidor.
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+Si querés migrar Study Time a otro navegador o dispositivo, podés exportar tus datos desde el menú de ajustes e importar el archivo `.json` en la nueva instalación.
+
+Tengo planeado integrar sincronización opcional en la nube más adelante.
+
+## 🛠️ Stack
+
+* React
+* TypeScript
+* TanStack Start
+* Tailwind CSS
+* shadcn/ui
+* Zustand
+* TanStack Query
+* date-fns
+
+## 🚀 Desarrollo
+
+Este proyecto usa Bun.
+
+```bash
+bun install
+bun run dev
 ```
 
-## Built with
+Para generar una build:
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+```bash
+bun run build
+```
+
+Otros comandos útiles:
+
+```bash
+bun run lint
+bun run format
+bunx tsc --noEmit
+```
+
+## ☁️ Deploy
+
+Actualmente está preparada para desplegarse en Cloudflare Pages.
+
+```bash
+bun run build
+```
+
+La configuración de deploy se encuentra en `wrangler.toml`.
+
+## 🗺️ Estado
+
+**Beta.**
+
+La aplicación ya es funcional y se puede utilizar como herramienta personal, pero todavía está en desarrollo.
+
+Algunas cosas pueden cambiar mientras voy probando el sistema en el uso diario.

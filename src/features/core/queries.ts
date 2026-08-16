@@ -115,6 +115,12 @@ export const useDeleteSession = () =>
     return data;
   });
 
+export const useRestoreSession = () =>
+  useDataMutation<Session>((data, session) => {
+    if (!data.sessions.some((s) => s.id === session.id)) data.sessions.push(session);
+    return data;
+  });
+
 export const useUpdateSettings = () =>
   useDataMutation<Partial<Settings>>((data, patch) => {
     data.settings = { ...data.settings, ...patch };

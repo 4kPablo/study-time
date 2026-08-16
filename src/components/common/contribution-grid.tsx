@@ -23,6 +23,7 @@ interface Props {
   activityName: (id: string) => string;
   className?: string;
   cellSize?: "sm" | "md";
+  align?: "center" | "right";
 }
 
 interface HoverState {
@@ -31,9 +32,22 @@ interface HoverState {
   y: number;
 }
 
-export function ContributionGrid({ sessions, range, activityName, className }: Props) {
+export function ContributionGrid({
+  sessions,
+  range,
+  activityName,
+  className,
+  align = "center",
+}: Props) {
   if (range === "1w") {
-    return <WeekStreak sessions={sessions} activityName={activityName} className={className} />;
+    return (
+      <WeekStreak
+        sessions={sessions}
+        activityName={activityName}
+        className={className}
+        align={align}
+      />
+    );
   }
   return (
     <GridCalendar
@@ -130,10 +144,12 @@ function WeekStreak({
   sessions,
   activityName,
   className,
+  align = "center",
 }: {
   sessions: Session[];
   activityName: (id: string) => string;
   className?: string | undefined;
+  align?: "center" | "right";
 }) {
   const week = useMemo(() => buildWeek(sessions), [sessions]);
   const streak = useMemo(() => currentStreak(sessions), [sessions]);
@@ -142,14 +158,18 @@ function WeekStreak({
 
   return (
     <div className={cn("relative", className)}>
-      <div className="mb-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-        <Flame className="size-3.5 text-cat-estudio" />
-        <span>
-          Racha de {streak} {streak === 1 ? "día" : "días"}
-        </span>
-      </div>
+      {streak > 0 && (
+        <div className="mb-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <Flame className="size-3.5 text-cat-estudio animate-pulse" />
+          <span>
+            Racha de {streak} {streak === 1 ? "día" : "días"}
+          </span>
+        </div>
+      )}
 
-      <div className="flex justify-center gap-2 sm:gap-3">
+      <div
+        className={cn("flex gap-2 sm:gap-3", align === "right" ? "justify-end" : "justify-center")}
+      >
         {week.map((day) => (
           <div key={day.key} className="flex flex-col items-center gap-1.5">
             <button

@@ -8,16 +8,8 @@ import { ContributionGrid } from "@/components/common/contribution-grid";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useStudyData } from "@/features/core/queries";
-import {
-  formatMinutes,
-  minutesThisWeek,
-  minutesToday,
-  RANGE_LABEL,
-  type CalendarRange,
-} from "@/features/core/stats";
+import { formatMinutes, minutesThisWeek, minutesToday } from "@/features/core/stats";
 import { useUiStore } from "@/features/focus/ui-store";
-
-const DASHBOARD_RANGES: CalendarRange[] = ["1w", "1m", "3m", "all"];
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,7 +35,7 @@ export const Route = createFileRoute("/")({
 function Dashboard() {
   const { data, isPending } = useStudyData();
   const setStartOpen = useUiStore((s) => s.setStartOpen);
-  const [range, setRange] = useState<CalendarRange>("1w");
+  const [showMonth, setShowMonth] = useState(false);
 
   const sessions = data?.sessions ?? [];
   const activities = data?.activities ?? [];
@@ -62,22 +54,46 @@ function Dashboard() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 py-6">
-      {/* Start */}
-      <section className="flex flex-col items-center gap-5 text-center">
-        <p className="text-sm text-muted-foreground">
-          {today > 0 ? `Hoy llevás ${formatMinutes(today)}` : "Todavía no estudiaste hoy"}
-        </p>
-        <Button
-          size="lg"
-          onClick={() => setStartOpen(true)}
-          data-sfx="confirm"
-          className="h-14 gap-2.5 rounded-full px-9 text-base"
-        >
-          <Play className="size-4" />
-          Comenzar sesión
-        </Button>
-        <p className="text-xs text-muted-foreground">Ctrl + N</p>
+      {/* Start + streak */}
+      <section className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
+        <div className="flex flex-col items-center gap-3">
+          <Button
+            size="lg"
+            onClick={() => setStartOpen(true)}
+            data-sfx="confirm"
+            className="h-14 gap-2.5 rounded-full px-9 text-base"
+          >
+            <Play className="size-4" />
+            Comenzar sesión
+          </Button>
+          <p className="text-center text-sm text-muted-foreground">
+            {today > 0 ? `Hoy llevás ${formatMinutes(today)}` : "Todavía no estudiaste hoy"}
+          </p>
+        </div>
+
+        <div className="group flex flex-col items-end">
+          <ContributionGrid
+            sessions={sessions}
+            range="1w"
+            activityName={activityName}
+            align="right"
+          />
+          <Button
+            size="sm"
+            variant="ghost"
+            className="mt-0.5 h-6 px-2 text-xs text-muted-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            onClick={() => setShowMonth((v) => !v)}
+          >
+            {showMonth ? "Ocultar mes actual" : "Ver mes actual"}
+          </Button>
+        </div>
       </section>
+
+      {showMonth && (
+        <section>
+          <ContributionGrid sessions={sessions} range="1m" activityName={activityName} />
+        </section>
+      )}
 
       {/* Weekly goal */}
       <section className="space-y-2.5">
@@ -91,31 +107,6 @@ function Dashboard() {
         <p className="text-xs text-muted-foreground">
           {goalPct >= 100 ? "Objetivo cumplido" : `${goalPct}% del objetivo`}
         </p>
-      </section>
-
-      {/* Calendar */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium">Calendario de esfuerzo</h2>
-          <div className="flex gap-1">
-            {DASHBOARD_RANGES.map((r) => (
-              <Button
-                key={r}
-                size="sm"
-                variant="ghost"
-                className={
-                  range === r
-                    ? "h-7 px-2 text-xs text-foreground"
-                    : "h-7 px-2 text-xs text-muted-foreground"
-                }
-                onClick={() => setRange(r)}
-              >
-                {RANGE_LABEL[r]}
-              </Button>
-            ))}
-          </div>
-        </div>
-        <ContributionGrid sessions={sessions} range={range} activityName={activityName} />
       </section>
 
       {/* Recent */}

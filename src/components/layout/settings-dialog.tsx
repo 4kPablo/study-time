@@ -1,10 +1,12 @@
-import { useRef } from "react";
-import { Download, Github, Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Download, Github, Minus, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useImportData, useStudyData } from "@/features/core/queries";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useImportData, useStudyData, useUpdateSettings } from "@/features/core/queries";
 import type { StudyData } from "@/features/core/types";
 
 interface Backup {
@@ -24,6 +26,72 @@ function unwrapBackup(value: unknown): StudyData | null {
   if (!Array.isArray(resources) || !Array.isArray(deadlines)) return null;
   if (!settings || typeof settings !== "object") return null;
   return { activities, sessions, resources, deadlines, settings } as StudyData;
+}
+
+function WeeklyGoalField() {
+  const { data } = useStudyData();
+  const updateSettings = useUpdateSettings();
+  const goalMin = data?.settings.weeklyGoalMin ?? 600;
+  const [value, setValue] = useState(String(goalMin / 60));
+
+  useEffect(() => {
+    setValue(String(goalMin / 60));
+  }, [goalMin]);
+
+  const commit = () => {
+    const hours = Math.max(0, Number(value) || 0);
+    updateSettings.mutate({ weeklyGoalMin: Math.round(hours * 60) });
+  };
+
+  const bump = (delta: number) => {
+    const current = Number(value) || 0;
+    const next = Math.max(0, Math.round((current + delta) * 2) / 2);
+    setValue(String(next));
+    updateSettings.mutate({ weeklyGoalMin: Math.round(next * 60) });
+  };
+
+  return (
+    <div className="space-y-2.5">
+      <Label htmlFor="weekly-goal">Objetivo semanal</Label>
+      <div className="flex items-center gap-2">
+        <Input
+          id="weekly-goal"
+          type="number"
+          min={0}
+          step={0.5}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              commit();
+              (e.target as HTMLInputElement).blur();
+            }
+          }}
+          className="h-9 w-20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        />
+        <div className="flex h-9 overflow-hidden rounded-md border border-border">
+          <button
+            type="button"
+            aria-label="Reducir horas"
+            onClick={() => bump(-0.5)}
+            className="flex w-8 items-center justify-center text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
+          >
+            <Minus className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Aumentar horas"
+            onClick={() => bump(0.5)}
+            className="flex w-8 items-center justify-center border-l border-border text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
+          >
+            <Plus className="size-3.5" />
+          </button>
+        </div>
+        <span className="text-sm text-muted-foreground">horas por semana</span>
+      </div>
+    </div>
+  );
 }
 
 export function SettingsDialog({
@@ -78,7 +146,9 @@ export function SettingsDialog({
           <DialogTitle>Ajustes</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-2">
+        <WeeklyGoalField />
+
+        <div className="space-y-2 pt-3">
           <Button
             variant="secondary"
             className="w-full justify-start gap-2"

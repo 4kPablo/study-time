@@ -1,15 +1,15 @@
 // Study Time — offline-first service worker.
 // Cache-first for static assets, network-first with cache fallback for navigations.
-const CACHE = "study-time-v2";
+const CACHE = "study-time-v3";
 const SHELL = [
   "/",
-  "/manifest.webmanifest",
+  "/site.webmanifest",
   "/favicon.ico",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/icon-maskable-192.png",
-  "/icons/icon-maskable-512.png",
-  "/icons/apple-touch-icon.png",
+  "/favicon.svg",
+  "/favicon-96x96.png",
+  "/apple-touch-icon.png",
+  "/web-app-manifest-192x192.png",
+  "/web-app-manifest-512x512.png",
 ];
 
 self.addEventListener("install", (event) => {

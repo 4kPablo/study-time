@@ -3,7 +3,7 @@ import { get, set } from "idb-keyval";
 import type { StudyData } from "./types";
 import { seedData } from "./seed";
 
-const KEY = "study-time:data:v1";
+const KEY = "study-time:data:v2";
 
 let memory: StudyData | null = null;
 

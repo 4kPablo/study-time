@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useKeyboardInset } from "@/hooks/use-keyboard-inset";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ export function ResponsiveDialog({
   children,
 }: ResponsiveDialogProps) {
   const isDesktop = useMediaQuery("(min-width: 640px)");
+  const keyboardInset = useKeyboardInset();
   const handleOpenAutoFocus = (e: Event) => {
     if (preventAutoFocus) e.preventDefault();
   };
@@ -42,6 +44,7 @@ export function ResponsiveDialog({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
+        style={keyboardInset > 0 ? { bottom: keyboardInset } : undefined}
         className={cn("flex max-h-[90dvh] flex-col overflow-y-auto rounded-t-xl", className)}
         onOpenAutoFocus={handleOpenAutoFocus}
       >

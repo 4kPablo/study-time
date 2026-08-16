@@ -18,8 +18,15 @@ function isIos(): boolean {
   return /iPad|iPhone|iPod/.test(window.navigator.userAgent);
 }
 
+export interface UseInstallPrompt {
+  canInstall: boolean;
+  ios: boolean;
+  installed: boolean;
+  prompt: () => Promise<void>;
+}
+
 /** Shared install-prompt state: Chromium's `beforeinstallprompt`, iOS hint, or installed. */
-export function useInstallPrompt() {
+export function useInstallPrompt(): UseInstallPrompt {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
 

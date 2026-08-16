@@ -3,12 +3,16 @@ import { Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useInstallPrompt } from "@/hooks/use-install-prompt";
+import type { UseInstallPrompt } from "@/hooks/use-install-prompt";
+
+interface Props {
+  installPrompt: UseInstallPrompt;
+}
 
 /** Shows an install button when the browser supports installing (Chromium), or
  *  a short iOS hint (Safari has no `beforeinstallprompt`). Hidden once installed. */
-export function InstallButton() {
-  const { canInstall, ios, installed, prompt } = useInstallPrompt();
+export function InstallButton({ installPrompt }: Props) {
+  const { canInstall, ios, installed, prompt } = installPrompt;
   const [iosOpen, setIosOpen] = useState(false);
 
   if (installed) return null;

@@ -4,7 +4,7 @@ import { Download, Keyboard, Menu, Play, Settings } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { useInstallPrompt } from "@/hooks/use-install-prompt";
+import { useInstallPrompt, type UseInstallPrompt } from "@/hooks/use-install-prompt";
 import { useUiStore } from "@/features/focus/ui-store";
 import { InstallButton } from "./install-button";
 import { SettingsDialog } from "./settings-dialog";
@@ -16,8 +16,14 @@ const NAV = [
   { to: "/estadisticas", label: "Estadísticas" },
 ] as const;
 
-function InstallMenuItem({ onPrompt }: { onPrompt: () => void }) {
-  const { canInstall, ios, installed, prompt } = useInstallPrompt();
+function InstallMenuItem({
+  installPrompt,
+  onPrompt,
+}: {
+  installPrompt: UseInstallPrompt;
+  onPrompt: () => void;
+}) {
+  const { canInstall, ios, installed, prompt } = installPrompt;
   const [showHint, setShowHint] = useState(false);
 
   if (installed) return null;
@@ -30,8 +36,7 @@ function InstallMenuItem({ onPrompt }: { onPrompt: () => void }) {
         data-sfx="none"
         onClick={() => {
           if (canInstall) {
-            onPrompt();
-            void prompt();
+            void prompt().finally(onPrompt);
           } else {
             setShowHint((v) => !v);
           }
@@ -56,6 +61,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const setShortcutsOpen = useUiStore((s) => s.setShortcutsOpen);
   const settingsOpen = useUiStore((s) => s.settingsOpen);
   const setSettingsOpen = useUiStore((s) => s.setSettingsOpen);
+  const installPrompt = useInstallPrompt();
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -92,7 +98,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="hidden items-center gap-2 lg:flex">
-            <InstallButton />
+            <InstallButton installPrompt={installPrompt} />
             <Button
               variant="ghost"
               size="icon"
@@ -180,7 +186,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Keyboard className="size-4" />
                   Atajos de teclado
                 </Button>
-                <InstallMenuItem onPrompt={closeMenu} />
+                <InstallMenuItem installPrompt={installPrompt} onPrompt={closeMenu} />
               </div>
             </SheetContent>
           </Sheet>

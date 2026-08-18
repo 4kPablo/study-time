@@ -73,51 +73,52 @@ function WeeklyGoalField() {
   }, [goalMin]);
 
   const commit = () => {
-    const hours = Math.max(0, Number(value) || 0);
-    updateSettings.mutate({ weeklyGoalMin: Math.round(hours * 60) });
+    const hours = Math.max(0, Math.round(Number(value) || 0));
+    setValue(String(hours));
+    updateSettings.mutate({ weeklyGoalMin: hours * 60 });
   };
 
   const bump = (delta: number) => {
-    const current = Number(value) || 0;
-    const next = Math.max(0, Math.round((current + delta) * 2) / 2);
+    const current = Math.round(Number(value) || 0);
+    const next = Math.max(0, current + delta);
     setValue(String(next));
-    updateSettings.mutate({ weeklyGoalMin: Math.round(next * 60) });
+    updateSettings.mutate({ weeklyGoalMin: next * 60 });
   };
 
   return (
     <div className="space-y-2.5">
       <Label htmlFor="weekly-goal">Objetivo semanal</Label>
       <div className="flex items-center gap-2">
-        <Input
-          id="weekly-goal"
-          type="number"
-          min={0}
-          step={0.5}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              commit();
-              (e.target as HTMLInputElement).blur();
-            }
-          }}
-          className="h-9 w-20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-        />
-        <div className="flex h-9 overflow-hidden rounded-md border border-border">
+        <div className="flex h-9 overflow-hidden rounded-md border border-input shadow-sm transition-colors focus-within:ring-1 focus-within:ring-ring">
+          <Input
+            id="weekly-goal"
+            type="number"
+            min={0}
+            step={1}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                commit();
+                (e.target as HTMLInputElement).blur();
+              }
+            }}
+            className="w-16 rounded-none border-0 bg-transparent px-0 text-center shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
           <button
             type="button"
             aria-label="Reducir horas"
-            onClick={() => bump(-0.5)}
-            className="flex w-8 items-center justify-center text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
+            onClick={() => bump(-1)}
+            className="flex w-8 shrink-0 items-center justify-center border-l border-border text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
           >
             <Minus className="size-3.5" />
           </button>
           <button
             type="button"
             aria-label="Aumentar horas"
-            onClick={() => bump(0.5)}
-            className="flex w-8 items-center justify-center border-l border-border text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
+            onClick={() => bump(1)}
+            className="flex w-8 shrink-0 items-center justify-center border-l border-border text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
           >
             <Plus className="size-3.5" />
           </button>

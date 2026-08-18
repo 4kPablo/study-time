@@ -1,6 +1,6 @@
 // Study Time — offline-first service worker.
 // Cache-first for static assets, network-first with cache fallback for navigations.
-const CACHE = "study-time-v3";
+const CACHE = "study-time-v4";
 const SHELL = [
   "/",
   "/site.webmanifest",

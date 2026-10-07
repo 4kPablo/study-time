@@ -16,14 +16,21 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatMinutes } from "@/features/core/stats";
-import { MODES, OUTCOMES, type SessionMode, type SessionOutcome } from "@/features/core/types";
+import {
+  ENERGY_LABEL,
+  MODES,
+  MODE_LABEL,
+  OUTCOMES,
+  type SessionMode,
+  type SessionOutcome,
+} from "@/features/core/types";
 
 const schema = z.object({
-  durationMin: z.coerce.number().min(1).max(1440),
-  mode: z.enum(["solo", "grupo", "clase", "online"]),
-  energy: z.coerce.number().min(1).max(5),
+  durationMin: z.coerce.number<number>().min(1).max(1440),
+  mode: z.enum(["autogestionada", "grupo", "rescate", "repaso"]),
+  energy: z.coerce.number<number>().min(1).max(5),
   outcome: z.enum(["excelente", "bien", "regular", "disperso"]),
-  distractions: z.coerce.number().min(0).max(99),
+  distractions: z.coerce.number<number>().min(0).max(99),
   notes: z.string().max(2000),
   nextStep: z.string().max(500),
 });
@@ -43,7 +50,7 @@ export function WrapUpDialog({ open, activityName, durationMin, onCancel, onSave
     resolver: zodResolver(schema),
     values: {
       durationMin,
-      mode: "solo" as SessionMode,
+      mode: "autogestionada" as SessionMode,
       energy: 3,
       outcome: "bien" as SessionOutcome,
       distractions: 0,
@@ -75,11 +82,19 @@ export function WrapUpDialog({ open, activityName, durationMin, onCancel, onSave
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor="durationMin">Duración (min)</Label>
-            <Input id="durationMin" type="number" {...form.register("durationMin")} />
+            <Input
+              id="durationMin"
+              type="number"
+              {...form.register("durationMin", { valueAsNumber: true })}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="distractions">Distracciones</Label>
-            <Input id="distractions" type="number" {...form.register("distractions")} />
+            <Input
+              id="distractions"
+              type="number"
+              {...form.register("distractions", { valueAsNumber: true })}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Modalidad</Label>
@@ -92,8 +107,8 @@ export function WrapUpDialog({ open, activityName, durationMin, onCancel, onSave
               </SelectTrigger>
               <SelectContent>
                 {MODES.map((m) => (
-                  <SelectItem key={m} value={m} className="capitalize">
-                    {m}
+                  <SelectItem key={m} value={m}>
+                    {MODE_LABEL[m]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -120,7 +135,7 @@ export function WrapUpDialog({ open, activityName, durationMin, onCancel, onSave
         </div>
 
         <div className="space-y-1.5">
-          <Label>Energía inicial: {form.watch("energy")}/5</Label>
+          <Label>Energía inicial</Label>
           <div className="flex gap-1.5">
             {[1, 2, 3, 4, 5].map((n) => (
               <Button
@@ -135,11 +150,17 @@ export function WrapUpDialog({ open, activityName, durationMin, onCancel, onSave
               </Button>
             ))}
           </div>
+          <p className="text-xs text-muted-foreground">{ENERGY_LABEL[form.watch("energy")]}</p>
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="notes">Notas</Label>
-          <Textarea id="notes" rows={2} {...form.register("notes")} />
+          <Textarea
+            id="notes"
+            rows={2}
+            placeholder="¿Qué hiciste en esta sesión?"
+            {...form.register("notes")}
+          />
         </div>
 
         <div className="space-y-1.5">

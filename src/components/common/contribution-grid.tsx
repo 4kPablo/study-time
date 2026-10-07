@@ -1,14 +1,12 @@
 import { Fragment, useMemo, useState, type FocusEvent, type MouseEvent } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Flame } from "lucide-react";
 
 import { LEVEL_BG } from "@/features/core/category-styles";
 import {
   buildGitHubHeat,
   buildMonthlyHeat,
   buildWeek,
-  currentStreak,
   formatMinutes,
   todayKey,
   type CalendarDay,
@@ -174,21 +172,11 @@ function WeekStreak({
   align?: "center" | "right";
 }) {
   const week = useMemo(() => buildWeek(sessions), [sessions]);
-  const streak = useMemo(() => currentStreak(sessions), [sessions]);
   const [hover, setHover] = useState<HoverState | null>(null);
   const today = todayKey();
 
   return (
     <div className={cn("relative", className)}>
-      {streak > 0 && (
-        <div className="mb-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-          <Flame className="size-3.5 text-cat-estudio animate-pulse" />
-          <span>
-            Racha de {streak} {streak === 1 ? "día" : "días"}
-          </span>
-        </div>
-      )}
-
       <div
         className={cn("flex gap-2 sm:gap-3", align === "right" ? "justify-end" : "justify-center")}
       >

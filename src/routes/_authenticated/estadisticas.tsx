@@ -15,6 +15,13 @@ import {
 import { ContributionGrid } from "@/components/common/contribution-grid";
 import { StatCard } from "@/components/common/stat-card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CATEGORY_HEX } from "@/features/core/category-styles";
 import { useStudyData } from "@/features/core/queries";
 import {
@@ -22,14 +29,14 @@ import {
   minutesByCategory,
   RANGE_LABEL,
   summaryStats,
-  weeklySeries,
+  weeklySeriesByCategory,
   type CalendarRange,
 } from "@/features/core/stats";
-import { CATEGORY_BY_ID, type CategoryId } from "@/features/core/types";
+import { CATEGORIES, CATEGORY_BY_ID, type CategoryId } from "@/features/core/types";
 
 const STATS_RANGES: CalendarRange[] = ["1m", "3m", "6m", "all"];
 
-export const Route = createFileRoute("/estadisticas")({
+export const Route = createFileRoute("/_authenticated/estadisticas")({
   head: () => ({
     meta: [
       { title: "Estadísticas — Study Time" },
@@ -51,13 +58,17 @@ export const Route = createFileRoute("/estadisticas")({
 function StatsPage() {
   const { data } = useStudyData();
   const [range, setRange] = useState<CalendarRange>("1m");
+  const [category, setCategory] = useState<CategoryId | "todas">("todas");
 
-  const sessions = data?.sessions ?? [];
+  const allSessions = data?.sessions ?? [];
+  const sessions = allSessions.filter((s) =>
+    category === "todas" ? true : s.categoryId === category,
+  );
   const activities = data?.activities ?? [];
   const activityName = (id: string) => activities.find((a) => a.id === id)?.name ?? "Actividad";
 
   const stats = useMemo(() => summaryStats(sessions), [sessions]);
-  const weekly = useMemo(() => weeklySeries(sessions), [sessions]);
+  const weekly = useMemo(() => weeklySeriesByCategory(sessions), [sessions]);
   const byCategory = useMemo(() => {
     const map = minutesByCategory(sessions);
     return [...map.entries()].map(([id, minutes]) => ({
@@ -69,7 +80,22 @@ function StatsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-semibold tracking-tight">Estadísticas</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-lg font-semibold tracking-tight">Estadísticas</h1>
+        <Select value={category} onValueChange={(v) => setCategory(v as CategoryId | "todas")}>
+          <SelectTrigger className="h-9 w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todas">Todas las categorías</SelectItem>
+            {CATEGORIES.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <StatCard label="Horas acumuladas" value={`${Math.round(stats.totalMinutes / 60)}h`} />
@@ -109,9 +135,22 @@ function StatsPage() {
                     fontSize: 12,
                     color: "var(--popover-foreground)",
                   }}
-                  formatter={(v: number) => [`${v} h`, "Tiempo"]}
+                  formatter={(value, name) => [
+                    `${typeof value === "number" ? value : Number(value ?? 0)} h`,
+                    CATEGORY_BY_ID[name as CategoryId]?.name ?? name ?? "",
+                  ]}
                 />
-                <Bar dataKey="hours" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                {CATEGORIES.filter((c) => byCategory.some((bc) => bc.id === c.id)).map(
+                  (c, i, arr) => (
+                    <Bar
+                      key={c.id}
+                      dataKey={c.id}
+                      stackId="weekly"
+                      fill={CATEGORY_HEX[c.id]}
+                      radius={i === arr.length - 1 ? [4, 4, 0, 0] : 0}
+                    />
+                  ),
+                )}
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -142,7 +181,10 @@ function StatsPage() {
                     fontSize: 12,
                     color: "var(--popover-foreground)",
                   }}
-                  formatter={(v: number, n) => [formatMinutes(v), n as string]}
+                  formatter={(value, name) => [
+                    formatMinutes(typeof value === "number" ? value : Number(value ?? 0)),
+                    String(name ?? ""),
+                  ]}
                 />
               </PieChart>
             </ResponsiveContainer>

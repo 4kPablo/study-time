@@ -4,16 +4,16 @@ import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   BookOpen,
+  CodeXml,
   FileText,
   Folder,
-  Github,
   GraduationCap,
   Link2,
   Pencil,
   Plus,
   Star,
   Trash2,
-  Youtube,
+  Video,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { CATEGORY_DOT, CATEGORY_SOFT } from "@/features/core/category-styles";
 import {
   useAddActivity,
@@ -44,6 +45,7 @@ import { daysUntil } from "@/features/core/stats";
 import {
   CATEGORIES,
   DEADLINE_LABEL,
+  RESOURCE_KIND_LABEL,
   type Activity,
   type CategoryId,
   type Deadline,
@@ -54,7 +56,7 @@ import {
 import { urgencyClass } from "@/features/dashboard/next-deadline-card";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/actividades")({
+export const Route = createFileRoute("/_authenticated/actividades")({
   head: () => ({
     meta: [
       { title: "Actividades — Study Time" },
@@ -75,9 +77,9 @@ export const Route = createFileRoute("/actividades")({
 
 const RESOURCE_ICON: Record<ResourceKind, typeof Link2> = {
   pdf: FileText,
-  youtube: Youtube,
+  youtube: Video,
   campus: GraduationCap,
-  github: Github,
+  github: CodeXml,
   drive: Folder,
   apuntes: BookOpen,
   link: Link2,
@@ -112,175 +114,199 @@ function ActivitiesPage() {
   const activities = data?.activities ?? [];
   const selected = activities.find((a) => a.id === selectedId) ?? activities[0];
   const resources = (data?.resources ?? []).filter((r) => r.activityId === selected?.id);
+  const generalResources = data?.generalResources ?? [];
   const deadlines = (data?.deadlines ?? [])
     .filter((d) => d.activityId === selected?.id)
     .sort((a, b) => a.date.localeCompare(b.date));
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
-      <div className="panel h-fit p-4">
-        <h1 className="mb-3 text-sm font-medium">Actividades</h1>
+    <div className="space-y-4">
+      <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
+        <div className="panel h-fit p-4">
+          <h1 className="mb-3 text-sm font-medium">Actividades</h1>
 
-        <div className="mb-3 flex gap-2">
-          <Input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && newName.trim()) {
+          <div className="mb-3 flex gap-2">
+            <Input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && newName.trim()) {
+                  addActivity.mutate({ name: newName, categoryId: newCategory });
+                  setNewName("");
+                }
+              }}
+              placeholder="Nueva actividad"
+              className="h-9"
+            />
+            <Button
+              size="icon"
+              className="size-9 shrink-0"
+              aria-label="Añadir actividad"
+              data-sfx="confirm"
+              onClick={() => {
+                if (!newName.trim()) return;
                 addActivity.mutate({ name: newName, categoryId: newCategory });
                 setNewName("");
-              }
-            }}
-            placeholder="Nueva actividad"
-            className="h-9"
-          />
-          <Button
-            size="icon"
-            className="size-9 shrink-0"
-            aria-label="Añadir actividad"
-            data-sfx="confirm"
-            onClick={() => {
-              if (!newName.trim()) return;
-              addActivity.mutate({ name: newName, categoryId: newCategory });
-              setNewName("");
-            }}
-          >
-            <Plus className="size-4" />
-          </Button>
-        </div>
-        <Select value={newCategory} onValueChange={(v) => setNewCategory(v as CategoryId)}>
-          <SelectTrigger className="mb-4 h-8 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {CATEGORIES.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <div className="space-y-4">
-          {CATEGORIES.map((c) => {
-            const items = activities.filter((a) => a.categoryId === c.id);
-            if (items.length === 0) return null;
-            return (
-              <div key={c.id}>
-                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              }}
+            >
+              <Plus className="size-4" />
+            </Button>
+          </div>
+          <Select value={newCategory} onValueChange={(v) => setNewCategory(v as CategoryId)}>
+            <SelectTrigger className="mb-4 h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
                   {c.name}
-                </p>
-                <ul className="space-y-0.5">
-                  {items.map((a) => (
-                    <li key={a.id}>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedId(a.id)}
-                        className={cn(
-                          "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors duration-150 hover:bg-accent",
-                          selected?.id === a.id && "bg-accent",
-                        )}
-                      >
-                        <span className={cn("size-2 rounded-full", CATEGORY_DOT[a.categoryId])} />
-                        <span className="flex-1 truncate">{a.name}</span>
-                        {a.favorite ? <Star className="size-3 text-muted-foreground" /> : null}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <div className="space-y-4">
+            {CATEGORIES.map((c) => {
+              const items = activities.filter((a) => a.categoryId === c.id);
+              if (items.length === 0) return null;
+              return (
+                <div key={c.id}>
+                  <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    {c.name}
+                  </p>
+                  <ul className="space-y-0.5">
+                    {items.map((a) => (
+                      <li key={a.id}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedId(a.id)}
+                          className={cn(
+                            "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors duration-150 hover:bg-accent",
+                            selected?.id === a.id && "bg-accent",
+                          )}
+                        >
+                          <span className={cn("size-2 rounded-full", CATEGORY_DOT[a.categoryId])} />
+                          <span className="flex-1 truncate">{a.name}</span>
+                          {a.favorite ? <Star className="size-3 text-muted-foreground" /> : null}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
         </div>
+
+        {selected ? (
+          <div className="space-y-4">
+            <div className="panel flex flex-wrap items-center gap-3 p-4">
+              <span className={cn("size-2.5 rounded-full", CATEGORY_DOT[selected.categoryId])} />
+              <InlineEdit
+                value={selected.name}
+                className="text-lg font-semibold tracking-tight"
+                onSave={(name) => updateActivity.mutate({ id: selected.id, patch: { name } })}
+              />
+              <span
+                className={cn(
+                  "rounded-full border px-2 py-0.5 text-xs",
+                  CATEGORY_SOFT[selected.categoryId],
+                )}
+              >
+                {CATEGORIES.find((c) => c.id === selected.categoryId)?.name}
+              </span>
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Switch
+                  checked={selected.countsTowardGoal}
+                  onCheckedChange={(checked) =>
+                    updateActivity.mutate({ id: selected.id, patch: { countsTowardGoal: checked } })
+                  }
+                  aria-label="Suma horas para el objetivo semanal"
+                  data-sfx="toggle"
+                />
+                Suma horas para el objetivo semanal
+              </label>
+              <div className="ml-auto flex gap-2">
+                <Button
+                  variant={selected.favorite ? "default" : "secondary"}
+                  size="sm"
+                  className="gap-1.5"
+                  data-sfx="toggle"
+                  onClick={() =>
+                    updateActivity.mutate({
+                      id: selected.id,
+                      patch: { favorite: !selected.favorite },
+                    })
+                  }
+                >
+                  <Star className="size-3.5" />
+                  {selected.favorite ? "Favorita" : "Marcar favorita"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Eliminar actividad"
+                  className="text-muted-foreground hover:text-destructive"
+                  data-sfx="cancel"
+                  onClick={() => {
+                    if (!selected) return;
+                    const snapshot = {
+                      activity: selected,
+                      resources,
+                      deadlines,
+                    };
+                    deleteActivity.mutate(selected.id);
+                    toast.success(`"${selected.name}" eliminada`, {
+                      action: {
+                        label: "Deshacer",
+                        onClick: () => {
+                          restoreActivity.mutate(snapshot);
+                          setSelectedId(selected.id);
+                        },
+                      },
+                    });
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </div>
+
+            <ResourcesPanel
+              resources={resources}
+              onAdd={(label, url, kind) =>
+                addResource.mutate({ activityId: selected.id, label, url, kind })
+              }
+              onUpdate={(id, label, url, kind) =>
+                updateResource.mutate({ id, patch: { label, url, kind } })
+              }
+              onDelete={(id) => deleteResource.mutate(id)}
+            />
+
+            <DeadlinesPanel
+              deadlines={deadlines}
+              onAdd={(title, date, kind) =>
+                addDeadline.mutate({ activityId: selected.id, title, date, kind })
+              }
+              onDelete={(id) => deleteDeadline.mutate(id)}
+            />
+          </div>
+        ) : (
+          <div className="panel flex items-center justify-center p-10 text-sm text-muted-foreground">
+            Creá tu primera actividad para empezar.
+          </div>
+        )}
       </div>
 
-      {selected ? (
-        <div className="space-y-4">
-          <div className="panel flex flex-wrap items-center gap-3 p-4">
-            <span className={cn("size-2.5 rounded-full", CATEGORY_DOT[selected.categoryId])} />
-            <InlineEdit
-              value={selected.name}
-              className="text-lg font-semibold tracking-tight"
-              onSave={(name) => updateActivity.mutate({ id: selected.id, patch: { name } })}
-            />
-            <span
-              className={cn(
-                "rounded-full border px-2 py-0.5 text-xs",
-                CATEGORY_SOFT[selected.categoryId],
-              )}
-            >
-              {CATEGORIES.find((c) => c.id === selected.categoryId)?.name}
-            </span>
-            <div className="ml-auto flex gap-2">
-              <Button
-                variant={selected.favorite ? "default" : "secondary"}
-                size="sm"
-                className="gap-1.5"
-                data-sfx="toggle"
-                onClick={() =>
-                  updateActivity.mutate({
-                    id: selected.id,
-                    patch: { favorite: !selected.favorite },
-                  })
-                }
-              >
-                <Star className="size-3.5" />
-                {selected.favorite ? "Favorita" : "Marcar favorita"}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Eliminar actividad"
-                className="text-muted-foreground hover:text-destructive"
-                data-sfx="cancel"
-                onClick={() => {
-                  if (!selected) return;
-                  const snapshot = {
-                    activity: selected,
-                    resources,
-                    deadlines,
-                  };
-                  deleteActivity.mutate(selected.id);
-                  toast.success(`"${selected.name}" eliminada`, {
-                    action: {
-                      label: "Deshacer",
-                      onClick: () => {
-                        restoreActivity.mutate(snapshot);
-                        setSelectedId(selected.id);
-                      },
-                    },
-                  });
-                }}
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          </div>
-
-          <ResourcesPanel
-            resources={resources}
-            onAdd={(label, url, kind) =>
-              addResource.mutate({ activityId: selected.id, label, url, kind })
-            }
-            onUpdate={(id, label, url, kind) =>
-              updateResource.mutate({ id, patch: { label, url, kind } })
-            }
-            onDelete={(id) => deleteResource.mutate(id)}
-          />
-
-          <DeadlinesPanel
-            deadlines={deadlines}
-            onAdd={(title, date, kind) =>
-              addDeadline.mutate({ activityId: selected.id, title, date, kind })
-            }
-            onDelete={(id) => deleteDeadline.mutate(id)}
-          />
-        </div>
-      ) : (
-        <div className="panel flex items-center justify-center p-10 text-sm text-muted-foreground">
-          Creá tu primera actividad para empezar.
-        </div>
-      )}
+      <ResourcesPanel
+        title="Recursos generales"
+        resources={generalResources}
+        onAdd={(label, url, kind) => addResource.mutate({ activityId: "", label, url, kind })}
+        onUpdate={(id, label, url, kind) =>
+          updateResource.mutate({ id, patch: { label, url, kind } })
+        }
+        onDelete={(id) => deleteResource.mutate(id)}
+      />
     </div>
   );
 }
@@ -290,11 +316,13 @@ function ResourcesPanel({
   onAdd,
   onUpdate,
   onDelete,
+  title = "Recursos",
 }: {
   resources: { id: string; label: string; url: string; kind: ResourceKind }[];
   onAdd: (label: string, url: string, kind: ResourceKind) => void;
   onUpdate: (id: string, label: string, url: string, kind: ResourceKind) => void;
   onDelete: (id: string) => void;
+  title?: string;
 }) {
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
@@ -327,7 +355,7 @@ function ResourcesPanel({
 
   return (
     <div className="panel p-4">
-      <h2 className="mb-3 text-sm font-medium">Recursos rápidos</h2>
+      <h2 className="mb-3 text-sm font-medium">{title}</h2>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {resources.map((r) => {
           const Icon = RESOURCE_ICON[r.kind];
@@ -390,8 +418,8 @@ function ResourcesPanel({
           </SelectTrigger>
           <SelectContent>
             {RESOURCE_KINDS.map((k) => (
-              <SelectItem key={k} value={k} className="capitalize">
-                {k}
+              <SelectItem key={k} value={k}>
+                {RESOURCE_KIND_LABEL[k]}
               </SelectItem>
             ))}
           </SelectContent>

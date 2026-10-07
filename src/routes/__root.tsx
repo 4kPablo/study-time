@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -14,6 +15,8 @@ import { AppShell } from "@/components/layout/app-shell";
 import { SfxLayer } from "@/components/layout/sfx-layer";
 import { Toaster } from "@/components/ui/sonner";
 import { SessionLayer } from "@/features/focus/session-layer";
+import { AuthProvider } from "@/features/auth/auth-provider";
+import { useAuthQueryInvalidation } from "@/features/auth/use-auth-query-invalidation";
 
 function NotFoundComponent() {
   return (
@@ -37,7 +40,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
 
@@ -112,7 +115,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="es" className="dark">
+    <html lang="es" className="dark" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -135,6 +138,18 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RootContent />
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
+function RootContent() {
+  useAuthQueryInvalidation();
+
+  return (
+    <>
       <AppShell>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
@@ -142,6 +157,6 @@ function RootComponent() {
       <SessionLayer />
       <SfxLayer />
       <Toaster position="bottom-right" />
-    </QueryClientProvider>
+    </>
   );
 }

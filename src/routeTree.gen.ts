@@ -9,104 +9,208 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as ActividadesRouteImport } from './routes/actividades'
-import { Route as EstadisticasRouteImport } from './routes/estadisticas'
-import { Route as SesionesRouteImport } from './routes/sesiones'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedActividadesRouteImport } from './routes/_authenticated/actividades'
+import { Route as AuthenticatedEstadisticasRouteImport } from './routes/_authenticated/estadisticas'
+import { Route as AuthenticatedSesionesRouteImport } from './routes/_authenticated/sesiones'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuthSignupRouteImport } from './routes/auth.signup'
 
-const IndexRoute = IndexRouteImport.update({
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const ActividadesRoute = ActividadesRouteImport.update({
-  id: '/actividades',
-  path: '/actividades',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EstadisticasRoute = EstadisticasRouteImport.update({
-  id: '/estadisticas',
-  path: '/estadisticas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SesionesRoute = SesionesRouteImport.update({
+const AuthenticatedActividadesRoute =
+  AuthenticatedActividadesRouteImport.update({
+    id: '/actividades',
+    path: '/actividades',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedEstadisticasRoute =
+  AuthenticatedEstadisticasRouteImport.update({
+    id: '/estadisticas',
+    path: '/estadisticas',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedSesionesRoute = AuthenticatedSesionesRouteImport.update({
   id: '/sesiones',
   path: '/sesiones',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSignupRoute = AuthSignupRouteImport.update({
+  id: '/auth/signup',
+  path: '/auth/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/actividades': typeof ActividadesRoute
-  '/estadisticas': typeof EstadisticasRoute
-  '/sesiones': typeof SesionesRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/actividades': typeof AuthenticatedActividadesRoute
+  '/estadisticas': typeof AuthenticatedEstadisticasRoute
+  '/sesiones': typeof AuthenticatedSesionesRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/actividades': typeof ActividadesRoute
-  '/estadisticas': typeof EstadisticasRoute
-  '/sesiones': typeof SesionesRoute
+  '/actividades': typeof AuthenticatedActividadesRoute
+  '/estadisticas': typeof AuthenticatedEstadisticasRoute
+  '/sesiones': typeof AuthenticatedSesionesRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/actividades': typeof ActividadesRoute
-  '/estadisticas': typeof EstadisticasRoute
-  '/sesiones': typeof SesionesRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_authenticated/actividades': typeof AuthenticatedActividadesRoute
+  '/_authenticated/estadisticas': typeof AuthenticatedEstadisticasRoute
+  '/_authenticated/sesiones': typeof AuthenticatedSesionesRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/actividades' | '/estadisticas' | '/sesiones'
+  fullPaths:
+    | '/'
+    | '/actividades'
+    | '/estadisticas'
+    | '/sesiones'
+    | '/auth/callback'
+    | '/auth/login'
+    | '/auth/signup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/actividades' | '/estadisticas' | '/sesiones'
-  id: '__root__' | '/' | '/actividades' | '/estadisticas' | '/sesiones'
+  to:
+    | '/actividades'
+    | '/estadisticas'
+    | '/sesiones'
+    | '/auth/callback'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/'
+  id:
+    | '__root__'
+    | '/_authenticated'
+    | '/_authenticated/actividades'
+    | '/_authenticated/estadisticas'
+    | '/_authenticated/sesiones'
+    | '/auth/callback'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ActividadesRoute: typeof ActividadesRoute
-  EstadisticasRoute: typeof EstadisticasRoute
-  SesionesRoute: typeof SesionesRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AuthCallbackRoute: typeof AuthCallbackRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthSignupRoute: typeof AuthSignupRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/actividades': {
-      id: '/actividades'
+    '/_authenticated/actividades': {
+      id: '/_authenticated/actividades'
       path: '/actividades'
       fullPath: '/actividades'
-      preLoaderRoute: typeof ActividadesRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedActividadesRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/estadisticas': {
-      id: '/estadisticas'
+    '/_authenticated/estadisticas': {
+      id: '/_authenticated/estadisticas'
       path: '/estadisticas'
       fullPath: '/estadisticas'
-      preLoaderRoute: typeof EstadisticasRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedEstadisticasRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/sesiones': {
-      id: '/sesiones'
+    '/_authenticated/sesiones': {
+      id: '/_authenticated/sesiones'
       path: '/sesiones'
       fullPath: '/sesiones'
-      preLoaderRoute: typeof SesionesRouteImport
+      preLoaderRoute: typeof AuthenticatedSesionesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/auth/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedActividadesRoute: typeof AuthenticatedActividadesRoute
+  AuthenticatedEstadisticasRoute: typeof AuthenticatedEstadisticasRoute
+  AuthenticatedSesionesRoute: typeof AuthenticatedSesionesRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedActividadesRoute: AuthenticatedActividadesRoute,
+  AuthenticatedEstadisticasRoute: AuthenticatedEstadisticasRoute,
+  AuthenticatedSesionesRoute: AuthenticatedSesionesRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ActividadesRoute: ActividadesRoute,
-  EstadisticasRoute: EstadisticasRoute,
-  SesionesRoute: SesionesRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AuthCallbackRoute: AuthCallbackRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthSignupRoute: AuthSignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

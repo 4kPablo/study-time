@@ -127,3 +127,28 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
 }
+
+/* Rising particles for the focus overlay background. Frozen with
+   `animation-play-state: paused` while the timer is paused. */
+@keyframes rise {
+  from {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: var(--particle-opacity, 0.5);
+  }
+  85% {
+    opacity: var(--particle-opacity, 0.5);
+  }
+  to {
+    transform: translate3d(var(--sway, 0px), -110vh, 0);
+    opacity: 0;
+  }
+}
+
+.ambient-particle {
+  animation-name: rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}

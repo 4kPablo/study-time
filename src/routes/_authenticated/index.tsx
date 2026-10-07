@@ -1,17 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
-import { Play } from "lucide-react";
+import { Flame, Play } from "lucide-react";
 
 import { ContributionGrid } from "@/components/common/contribution-grid";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useStudyData } from "@/features/core/queries";
-import { formatMinutes, minutesThisWeek, minutesToday } from "@/features/core/stats";
+import {
+  currentStreak,
+  formatMinutes,
+  minutesThisWeek,
+  minutesToday,
+  relativeDay,
+} from "@/features/core/stats";
 import { useUiStore } from "@/features/focus/ui-store";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Study Time — Empezá a estudiar en 10 segundos" },
@@ -44,7 +48,8 @@ function Dashboard() {
   const activityName = (id: string) => activities.find((a) => a.id === id)?.name ?? "Actividad";
 
   const today = minutesToday(sessions);
-  const week = minutesThisWeek(sessions);
+  const week = minutesThisWeek(sessions, activities);
+  const streak = currentStreak(sessions);
   const recent = [...sessions].sort((a, b) => b.startedAt.localeCompare(a.startedAt)).slice(0, 5);
   const goalPct = Math.min(100, Math.round((week / Math.max(1, goal)) * 100));
 
@@ -111,7 +116,17 @@ function Dashboard() {
 
       {/* Recent */}
       <section className="space-y-3">
-        <h2 className="text-sm font-medium">Últimas sesiones</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium">Últimas sesiones</h2>
+          {streak > 0 ? (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Flame className="size-3.5 text-cat-estudio animate-pulse" />
+              <span>
+                Racha de {streak} {streak === 1 ? "día" : "días"}
+              </span>
+            </div>
+          ) : null}
+        </div>
         {recent.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Todavía no hay sesiones. La primera empieza con un click.
@@ -122,7 +137,7 @@ function Dashboard() {
               <li key={s.id} className="flex items-center gap-3 py-2.5 text-sm">
                 <span className="flex-1 truncate">{activityName(s.activityId)}</span>
                 <span className="hidden text-xs text-muted-foreground sm:block">
-                  {format(parseISO(s.date), "EEE d MMM", { locale: es })}
+                  {relativeDay(s.date)}
                 </span>
                 <span className="w-16 text-right font-mono text-xs text-muted-foreground">
                   {formatMinutes(s.durationMin)}

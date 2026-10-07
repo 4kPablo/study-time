@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Download, Github, Minus, Plus, Upload, Volume2, VolumeX } from "lucide-react";
+import { CodeXml, Download, LogOut, Minus, Plus, Upload, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -7,11 +7,21 @@ import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useSfx } from "@/hooks/use-sfx";
 import { useSfxStore } from "@/lib/sfx-store";
 import { useImportData, useStudyData, useUpdateSettings } from "@/features/core/queries";
+import { useTimerStore } from "@/features/focus/timer-store";
+import { useAuth } from "@/features/auth/auth-provider";
 import type { StudyData } from "@/features/core/types";
+import { cn } from "@/lib/utils";
 
 interface Backup {
   app?: string;
@@ -129,6 +139,72 @@ function WeeklyGoalField() {
   );
 }
 
+function TimerSettings() {
+  const mode = useTimerStore((s) => s.mode);
+  const setMode = useTimerStore((s) => s.setMode);
+  const workMin = useTimerStore((s) => s.workMin);
+  const setWorkMin = useTimerStore((s) => s.setWorkMin);
+  const restMin = useTimerStore((s) => s.restMin);
+  const setRestMin = useTimerStore((s) => s.setRestMin);
+
+  return (
+    <div className="space-y-2.5">
+      <Label>Cronómetro</Label>
+      <div className="flex items-center gap-1 rounded-md border border-input bg-background p-1">
+        {(["continuo", "pomodoro"] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMode(m)}
+            className={cn(
+              "flex-1 rounded-md px-3 py-1.5 text-sm transition-colors duration-150",
+              mode === m
+                ? "bg-secondary text-secondary-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {m === "continuo" ? "Continuo" : "Pomodoro"}
+          </button>
+        ))}
+      </div>
+      {mode === "pomodoro" ? (
+        <div className="flex items-center gap-2">
+          <div className="flex-1 space-y-1.5">
+            <Label className="text-xs">Foco</Label>
+            <Select value={String(workMin)} onValueChange={(v) => setWorkMin(Number(v))}>
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[25, 45, 60].map((m) => (
+                  <SelectItem key={m} value={String(m)}>
+                    {m} min
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1 space-y-1.5">
+            <Label className="text-xs">Descanso</Label>
+            <Select value={String(restMin)} onValueChange={(v) => setRestMin(Number(v))}>
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[5, 10, 15].map((m) => (
+                  <SelectItem key={m} value={String(m)}>
+                    {m} min
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function SettingsDialog({
   open,
   onOpenChange,
@@ -138,7 +214,13 @@ export function SettingsDialog({
 }) {
   const { data } = useStudyData();
   const importData = useImportData();
+  const { signOut } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleSignOut = async () => {
+    await signOut();
+    onOpenChange(false);
+  };
 
   const exportData = () => {
     if (!data) return;
@@ -187,6 +269,8 @@ export function SettingsDialog({
 
       <WeeklyGoalField />
 
+      <TimerSettings />
+
       <SoundToggle />
 
       <div className="space-y-2 pt-3">
@@ -218,6 +302,18 @@ export function SettingsDialog({
         onChange={(e) => onFile(e.target.files?.[0] ?? null)}
       />
 
+      <div className="border-t border-border pt-4 space-y-2">
+        <Button
+          variant="destructive"
+          className="w-full justify-start gap-2"
+          data-sfx="cancel"
+          onClick={handleSignOut}
+        >
+          <LogOut className="size-4" />
+          Cerrar sesión
+        </Button>
+      </div>
+
       <div className="border-t border-border pt-4 text-xs text-muted-foreground">
         Desarrollado por{" "}
         <a
@@ -226,7 +322,7 @@ export function SettingsDialog({
           rel="noreferrer"
           className="font-medium text-foreground transition-colors hover:text-primary"
         >
-          <Github className="mr-1 inline-block size-3.5 -translate-y-px align-middle" />
+          <CodeXml className="mr-1 inline-block size-3.5 -translate-y-px align-middle" />
           Pablo Estigarribia
         </a>
       </div>

@@ -12,7 +12,7 @@ import {
 } from "date-fns";
 import { es } from "date-fns/locale";
 
-import type { CategoryId, Session } from "./types";
+import type { Activity, CategoryId, Session } from "./types";
 
 export function formatMinutes(min: number): string {
   const m = Math.max(0, Math.round(min));
@@ -52,9 +52,12 @@ export function minutesToday(sessions: Session[]) {
   return sumMinutes(sessions.filter((s) => s.date === key));
 }
 
-export function minutesThisWeek(sessions: Session[]) {
+export function minutesThisWeek(sessions: Session[], activities: Activity[] = []) {
   const start = startOfWeek(new Date(), { weekStartsOn: 1 });
-  return sumMinutes(sessions.filter((s) => parseISO(s.date) >= start));
+  const excluded = new Set(activities.filter((a) => !a.countsTowardGoal).map((a) => a.id));
+  return sumMinutes(
+    sessions.filter((s) => parseISO(s.date) >= start && !excluded.has(s.activityId)),
+  );
 }
 
 /** Consecutive days with at least one session, tolerating "today not started yet". */
@@ -270,6 +273,35 @@ export function weeklySeries(sessions: Session[], weeks = 12) {
   }));
 }
 
+const EMPTY_CATEGORY_BUCKET: Record<CategoryId, number> = {
+  estudio: 0,
+  desarrollo: 0,
+  entrenamiento: 0,
+  personal: 0,
+};
+
+/** Per-week totals split by category, ready for stacked bars. */
+export function weeklySeriesByCategory(sessions: Session[], weeks = 12) {
+  const start = startOfWeek(subDays(new Date(), weeks * 7), { weekStartsOn: 1 });
+  const buckets = new Map<string, Record<CategoryId, number>>();
+  for (let i = 0; i <= weeks; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i * 7);
+    buckets.set(format(d, "yyyy-MM-dd"), { ...EMPTY_CATEGORY_BUCKET });
+  }
+  for (const s of sessions) {
+    const key = format(startOfWeek(parseISO(s.date), { weekStartsOn: 1 }), "yyyy-MM-dd");
+    const bucket = buckets.get(key);
+    if (bucket) bucket[s.categoryId] += s.durationMin;
+  }
+  return [...buckets.entries()].map(([key, cats]) => ({
+    week: format(parseISO(key), "dd/MM"),
+    ...Object.fromEntries(
+      (Object.keys(cats) as CategoryId[]).map((c) => [c, Math.round((cats[c] / 60) * 10) / 10]),
+    ),
+  }));
+}
+
 export function minutesByCategory(sessions: Session[]) {
   const map = new Map<CategoryId, number>();
   for (const s of sessions) map.set(s.categoryId, (map.get(s.categoryId) ?? 0) + s.durationMin);
@@ -300,4 +332,20 @@ export function summaryStats(sessions: Session[]) {
 
 export function daysUntil(dateKey: string) {
   return differenceInCalendarDays(parseISO(dateKey), new Date());
+}
+
+/** Relative label for a past date: "Hoy", "Ayer", "Anteayer", "Hace X días/semanas/meses". */
+export function relativeDay(dateKey: string): string {
+  const days = differenceInCalendarDays(new Date(), parseISO(dateKey));
+  if (days <= 0) return "Hoy";
+  if (days === 1) return "Ayer";
+  if (days === 2) return "Anteayer";
+  if (days < 7) return `Hace ${days} días`;
+  if (days < 14) return "Hace una semana";
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `Hace ${weeks} semanas`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `Hace ${months} ${months === 1 ? "mes" : "meses"}`;
+  const years = Math.floor(days / 365);
+  return `Hace ${years} ${years === 1 ? "año" : "años"}`;
 }

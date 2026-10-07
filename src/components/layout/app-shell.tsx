@@ -8,6 +8,7 @@ import { useInstallPrompt, type UseInstallPrompt } from "@/hooks/use-install-pro
 import { useUiStore } from "@/features/focus/ui-store";
 import { InstallButton } from "./install-button";
 import { SettingsDialog } from "./settings-dialog";
+import { MigrationPrompt } from "@/components/auth/migration-prompt";
 
 const NAV = [
   { to: "/", label: "Dashboard" },
@@ -193,7 +194,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-5 sm:px-6">{children}</main>
+      <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-5 sm:px-6">
+        <MigrationPrompt>{children}</MigrationPrompt>
+      </main>
 
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>

@@ -31,7 +31,7 @@ There is no test suite.
 
 - **All data is client-only.** No server functions exist (verified). Don't add
   `createServerFn` or a backend for app state.
-- Persistence: IndexedDB via `idb-keyval` under `study-time:data:v1`, wrapped by
+- Persistence: IndexedDB via `idb-keyval` under `study-time:data:v2`, wrapped by
   `src/features/core/repository.ts` (memory-cached, seeded on first load). React
   Query hooks in `src/features/core/queries.ts` are the only way components should
   read/write data — add new mutations there, never call `idb-keyval` directly.
@@ -47,6 +47,21 @@ There is no test suite.
   `cancel`), `data-sfx="none"` opts out. Components must guard `window` access for
   SSR (the app does render server-side).
 
+## Supabase (Auth + Database)
+
+- **Auth**: PKCE flow via `@supabase/ssr` cookies. SSR middleware in `src/middleware/auth.ts`
+  injects `supabase` client + `user` into route context.
+- **Client**: `src/lib/supabase/client.ts` (browser), `src/lib/supabase/server.ts` (SSR).
+- **Routes**: `/auth/login`, `/auth/signup`, `/auth/callback` (OAuth code exchange).
+- **Protected routes**: `src/components/auth/require-auth.tsx` redirects to login if no user.
+- **Auth state**: `src/features/auth/auth-provider.tsx` wraps app, exposes `useAuth()` hook.
+- **Database**: PostgreSQL schema in `supabase/schema.sql` with RLS (`auth.uid() = user_id`).
+- **Repository**: `src/lib/supabase/repository.ts` — Supabase-backed CRUD (mirrors local API).
+- **Queries**: `src/features/core/supabase-queries.ts` — TanStack Query hooks with optimistic updates.
+- **Types**: `src/lib/supabase/database.types.ts` (generated), `src/lib/supabase/types.ts` (mapped).
+- **Env**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (see `.env.example`).
+- **Migration**: Local `idb-keyval` remains fallback for unauthenticated users. Export/import JSON for manual migration.
+
 ## PWA
 
 - `public/site.webmanifest` + `public/sw.js` make the app installable. Favicons
@@ -54,7 +69,7 @@ There is no test suite.
   `favicon-96x96.png`, `apple-touch-icon.png`, `logo.png`,
   `web-app-manifest-192x192.png`, `web-app-manifest-512x512.png`).
 - The service worker registers only in production (`import.meta.env.PROD`), cache
-  name `study-time-v3`. Bump the cache name when changing the precache shell.
+  name `study-time-v4`. Bump the cache name when changing the precache shell.
 - `src/components/layout/install-button.tsx` (in `AppShell`) handles
   `beforeinstallprompt` and shows iOS instructions; keep `window` guards there for SSR.
 

@@ -9,12 +9,14 @@ export function seedData(): StudyData {
   const activities: Activity[] = [];
   const sessions: Session[] = [];
   const resources: Resource[] = [];
+  const generalResources: Resource[] = [];
   const deadlines: Deadline[] = [];
 
   return {
     activities,
     sessions,
     resources,
+    generalResources,
     deadlines,
     settings: { weeklyGoalMin: 600 },
   };

@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
+import { Celebrate } from "@/components/common/celebrate";
 import { useAddSession, useStudyData } from "@/features/core/queries";
 import { sfx } from "@/lib/sfx";
+import { pomodoroAt } from "./pomodoro";
 import { useTimerStore } from "./timer-store";
 import { useUiStore } from "./ui-store";
 import { FocusOverlay } from "./focus-overlay";
@@ -38,6 +40,7 @@ export function SessionLayer() {
   const toggleTimer = useTimerStore((s) => s.toggle);
 
   const [pending, setPending] = useState<PendingSession | null>(null);
+  const [celebration, setCelebration] = useState<{ key: number; intensity: number } | null>(null);
 
   useEffect(() => {
     void useTimerStore.persist.rehydrate();
@@ -51,9 +54,13 @@ export function SessionLayer() {
     if (!state.activityId) return;
     const activity = activities.find((a) => a.id === state.activityId);
     const elapsed = state.elapsedMs(Date.now());
-    const durationMin = Math.max(1, Math.round(elapsed / 60_000));
+    const workSeconds =
+      state.mode === "pomodoro"
+        ? pomodoroAt(elapsed, state.workMin, state.restMin).workSec
+        : Math.round(elapsed / 1000);
+    const durationMin = Math.max(1, Math.round(workSeconds / 60));
     const endedAt = new Date();
-    const startedAt = new Date(endedAt.getTime() - elapsed);
+    const startedAt = new Date(endedAt.getTime() - workSeconds * 1000);
     setPending({
       activityId: state.activityId,
       activityName: activity?.name ?? "Sesión",
@@ -123,6 +130,8 @@ export function SessionLayer() {
       nextStep: values.nextStep,
     });
     setPending(null);
+    setCelebration({ key: Date.now(), intensity: values.durationMin / 120 });
+    window.setTimeout(() => setCelebration(null), 1700);
     toast.success("Sesión registrada. Buen trabajo.");
     sfx.success();
   };
@@ -154,6 +163,8 @@ export function SessionLayer() {
       ) : null}
 
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+
+      {celebration ? <Celebrate key={celebration.key} intensity={celebration.intensity} /> : null}
     </>
   );
 }

@@ -6,15 +6,15 @@ Está pensada para reducir la fricción de empezar a estudiar y hacer visible cu
 
 ## ✨ Funciones
 
-* ⏱️ Cronómetro de concentración.
-* 🎯 Objetivo semanal (en horas) configurable.
-* ✏️ Registro de sesiones sin necesidad de usar el cronómetro.
-* 📊 Estadísticas para entender tus hábitos y evolución.
-* 🔥 Racha y progreso respecto al objetivo semanal.
-* 🗓️ Calendario de actividad inspirado en GitHub, según el esfuerzo realizado cada día.
-* 📚 Actividades y recursos personalizados.
-* 📱 PWA instalable y usable offline.
-* 💾 Exportación e importación de datos para crear respaldos.
+- ⏱️ Cronómetro de concentración.
+- 🎯 Objetivo semanal (en horas) configurable.
+- ✏️ Registro de sesiones sin necesidad de usar el cronómetro.
+- 📊 Estadísticas para entender tus hábitos y evolución.
+- 🔥 Racha y progreso respecto al objetivo semanal.
+- 🗓️ Calendario de actividad inspirado en GitHub, según el esfuerzo realizado cada día.
+- 📚 Actividades y recursos personalizados.
+- 📱 PWA instalable y usable offline.
+- 💾 Exportación e importación de datos para crear respaldos.
 
 ## 🔒 Datos y privacidad
 
@@ -26,14 +26,14 @@ Tengo planeado integrar sincronización opcional en la nube más adelante.
 
 ## 🛠️ Stack
 
-* React
-* TypeScript
-* TanStack Start
-* Tailwind CSS
-* shadcn/ui
-* Zustand
-* TanStack Query
-* date-fns
+- React
+- TypeScript
+- TanStack Start
+- Tailwind CSS
+- shadcn/ui
+- Zustand
+- TanStack Query
+- date-fns
 
 ## 🚀 Desarrollo
 

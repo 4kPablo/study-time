@@ -124,7 +124,7 @@ export const supabaseRepository = {
       supabase.from("resources").select("*").eq("user_id", user.id),
       supabase.from("general_resources").select("*").eq("user_id", user.id),
       supabase.from("deadlines").select("*").eq("user_id", user.id),
-      supabase.from("user_settings").select("*").eq("user_id", user.id).single(),
+      supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle(),
     ]);
 
     if (activitiesError) throw activitiesError;
@@ -132,7 +132,7 @@ export const supabaseRepository = {
     if (resourcesError) throw resourcesError;
     if (generalResourcesError) throw generalResourcesError;
     if (deadlinesError) throw deadlinesError;
-    if (settingsError && settingsError.code !== "PGRST116") throw settingsError;
+    if (settingsError) throw settingsError;
 
     return {
       activities: (activities ?? []).map(toActivity),

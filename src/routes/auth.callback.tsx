@@ -32,7 +32,7 @@ function AuthCallback() {
         return;
       }
 
-      if (!search.code || !isSupabaseConfigured()) {
+      if (!isSupabaseConfigured()) {
         setErrorMessage("No se pudo completar el inicio de sesión con Google.");
         return;
       }
@@ -44,7 +44,13 @@ function AuthCallback() {
         } = await createClient().auth.getSession();
 
         if (error) throw error;
-        if (!session) throw new Error("Google no devolvió una sesión válida.");
+        if (!session) {
+          throw new Error(
+            search.code
+              ? "Google no devolvió una sesión válida."
+              : "No se encontró una sesión activa después de volver de Google.",
+          );
+        }
 
         if (active) navigate({ to: next, replace: true });
       } catch (error) {

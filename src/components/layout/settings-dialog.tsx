@@ -1,6 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { CodeXml, Download, LogOut, Minus, Plus, Upload, Volume2, VolumeX } from "lucide-react";
+import {
+  CodeXml,
+  Download,
+  LogIn,
+  LogOut,
+  Minus,
+  Plus,
+  Upload,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -214,12 +225,22 @@ export function SettingsDialog({
 }) {
   const { data } = useStudyData();
   const importData = useImportData();
-  const { signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [signingOut, setSigningOut] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleSignOut = async () => {
-    await signOut();
-    onOpenChange(false);
+    setSigningOut(true);
+    try {
+      await signOut();
+      toast.success("Sesión cerrada");
+      onOpenChange(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "No se pudo cerrar sesión");
+    } finally {
+      setSigningOut(false);
+    }
   };
 
   const exportData = () => {
@@ -303,15 +324,35 @@ export function SettingsDialog({
       />
 
       <div className="border-t border-border pt-4 space-y-2">
-        <Button
-          variant="destructive"
-          className="w-full justify-start gap-2"
-          data-sfx="cancel"
-          onClick={handleSignOut}
-        >
-          <LogOut className="size-4" />
-          Cerrar sesión
-        </Button>
+        {authLoading ? (
+          <Button variant="secondary" className="w-full justify-start gap-2" disabled>
+            Verificando sesión...
+          </Button>
+        ) : user ? (
+          <Button
+            variant="destructive"
+            className="w-full justify-start gap-2"
+            data-sfx="cancel"
+            disabled={signingOut}
+            onClick={handleSignOut}
+          >
+            <LogOut className="size-4" />
+            {signingOut ? "Cerrando sesión..." : "Cerrar sesión"}
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            className="w-full justify-start gap-2"
+            data-sfx="confirm"
+            onClick={() => {
+              onOpenChange(false);
+              navigate({ to: "/auth/login" });
+            }}
+          >
+            <LogIn className="size-4" />
+            Iniciar sesión
+          </Button>
+        )}
       </div>
 
       <div className="border-t border-border pt-4 text-xs text-muted-foreground">

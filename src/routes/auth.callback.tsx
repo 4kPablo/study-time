@@ -7,6 +7,7 @@ interface AuthCallbackSearch {
   code?: string;
   next?: string;
   error?: string;
+  error_description?: string;
 }
 
 export const Route = createFileRoute("/auth/callback")({
@@ -17,24 +18,58 @@ export const Route = createFileRoute("/auth/callback")({
 function AuthCallback() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth/callback" }) as AuthCallbackSearch;
-  const code = search.code;
   const next = search.next || "/";
 
   useEffect(() => {
-    if (code && isSupabaseConfigured()) {
-      const supabase = createClient();
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (error) {
-          console.error("Auth callback error:", error);
-          navigate({ to: "/auth/login", search: { error: error.message } });
-        } else {
-          navigate({ to: next });
+    let active = true;
+
+    const completeSignIn = async () => {
+      const authError = search.error_description || search.error;
+      if (authError) {
+        navigate({ to: "/auth/login", search: { error: authError } });
+        return;
+      }
+
+      if (!search.code || !isSupabaseConfigured()) {
+        navigate({
+          to: "/auth/login",
+          search: { error: "No se pudo completar el inicio de sesión con Google." },
+        });
+        return;
+      }
+
+      try {
+        const {
+          data: { session },
+          error,
+        } = await createClient().auth.getSession();
+
+        if (error) throw error;
+        if (!session) throw new Error("Google no devolvió una sesión válida.");
+
+        if (active) navigate({ to: next, replace: true });
+      } catch (error) {
+        console.error("Auth callback error:", error);
+        if (active) {
+          navigate({
+            to: "/auth/login",
+            search: {
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "No se pudo completar el inicio de sesión con Google.",
+            },
+          });
         }
-      });
-    } else {
-      navigate({ to: "/auth/login", search: { error: "Código de autorización faltante" } });
-    }
-  }, [code, navigate, next]);
+      }
+    };
+
+    void completeSignIn();
+
+    return () => {
+      active = false;
+    };
+  }, [navigate, next, search.code, search.error, search.error_description]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">

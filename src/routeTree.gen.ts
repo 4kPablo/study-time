@@ -15,8 +15,6 @@ import { Route as AuthenticatedActividadesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedEstadisticasRouteImport } from './routes/_authenticated/estadisticas'
 import { Route as AuthenticatedSesionesRouteImport } from './routes/_authenticated/sesiones'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
-import { Route as AuthLoginRouteImport } from './routes/auth.login'
-import { Route as AuthSignupRouteImport } from './routes/auth.signup'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -49,16 +47,6 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: '/auth/login',
-  path: '/auth/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthSignupRoute = AuthSignupRouteImport.update({
-  id: '/auth/signup',
-  path: '/auth/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -66,16 +54,12 @@ export interface FileRoutesByFullPath {
   '/estadisticas': typeof AuthenticatedEstadisticasRoute
   '/sesiones': typeof AuthenticatedSesionesRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/auth/login': typeof AuthLoginRoute
-  '/auth/signup': typeof AuthSignupRoute
 }
 export interface FileRoutesByTo {
   '/actividades': typeof AuthenticatedActividadesRoute
   '/estadisticas': typeof AuthenticatedEstadisticasRoute
   '/sesiones': typeof AuthenticatedSesionesRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/auth/login': typeof AuthLoginRoute
-  '/auth/signup': typeof AuthSignupRoute
   '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
@@ -85,29 +69,14 @@ export interface FileRoutesById {
   '/_authenticated/estadisticas': typeof AuthenticatedEstadisticasRoute
   '/_authenticated/sesiones': typeof AuthenticatedSesionesRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/auth/login': typeof AuthLoginRoute
-  '/auth/signup': typeof AuthSignupRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/actividades'
-    | '/estadisticas'
-    | '/sesiones'
-    | '/auth/callback'
-    | '/auth/login'
-    | '/auth/signup'
+    '/' | '/actividades' | '/estadisticas' | '/sesiones' | '/auth/callback'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/actividades'
-    | '/estadisticas'
-    | '/sesiones'
-    | '/auth/callback'
-    | '/auth/login'
-    | '/auth/signup'
-    | '/'
+  to: '/actividades' | '/estadisticas' | '/sesiones' | '/auth/callback' | '/'
   id:
     | '__root__'
     | '/_authenticated'
@@ -115,16 +84,12 @@ export interface FileRouteTypes {
     | '/_authenticated/estadisticas'
     | '/_authenticated/sesiones'
     | '/auth/callback'
-    | '/auth/login'
-    | '/auth/signup'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthCallbackRoute: typeof AuthCallbackRoute
-  AuthLoginRoute: typeof AuthLoginRoute
-  AuthSignupRoute: typeof AuthSignupRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -171,20 +136,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/login': {
-      id: '/auth/login'
-      path: '/auth/login'
-      fullPath: '/auth/login'
-      preLoaderRoute: typeof AuthLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/signup': {
-      id: '/auth/signup'
-      path: '/auth/signup'
-      fullPath: '/auth/signup'
-      preLoaderRoute: typeof AuthSignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -209,8 +160,6 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthCallbackRoute: AuthCallbackRoute,
-  AuthLoginRoute: AuthLoginRoute,
-  AuthSignupRoute: AuthSignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

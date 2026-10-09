@@ -52,7 +52,7 @@ There is no test suite.
 - **Auth**: PKCE flow via `@supabase/ssr` cookies. SSR middleware in `src/middleware/auth.ts`
   injects `supabase` client + `user` into route context.
 - **Client**: `src/lib/supabase/client.ts` (browser), `src/lib/supabase/server.ts` (SSR).
-- **Routes**: `/auth/login`, `/auth/signup`, `/auth/callback` (OAuth code exchange).
+- **Routes**: Google OAuth starts in Settings; `/auth/callback` completes the PKCE flow.
 - **Protected routes**: `src/components/auth/require-auth.tsx` redirects to login if no user.
 - **Auth state**: `src/features/auth/auth-provider.tsx` wraps app, exposes `useAuth()` hook.
 - **Database**: PostgreSQL schema in `supabase/schema.sql` with RLS (`auth.uid() = user_id`).

@@ -66,7 +66,11 @@ Actualmente está preparada para desplegarse en Cloudflare Pages.
 bun run build
 ```
 
-La configuración de deploy se encuentra en `wrangler.toml`.
+La configuración de deploy se encuentra en `wrangler.toml`. Para el deploy con
+integración de Git, configurá `BUN_VERSION` como `1.3.14` en las variables de
+entorno de Cloudflare Pages, tanto para Preview como para Production. La imagen
+por defecto usa Bun `1.2.15`, que puede fallar al verificar el tarball de
+TypeScript durante `bun install --frozen-lockfile`.
 
 ## 🗺️ Estado
 

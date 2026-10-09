@@ -151,14 +151,20 @@ All tables added to `supabase_realtime` publication for live sync (optional).
 | `src/lib/supabase/server.ts` | SSR server client (`createServerClient` with cookie handling)        |
 | `src/middleware/auth.ts`     | TanStack Start middleware injecting `supabase` + `user` into context |
 
-### Auth Flow (PKCE)
+### Auth Flow (Google OAuth + PKCE)
 
-1. **Login/Signup**: `/auth/login.tsx`, `/auth/signup.tsx` use `supabase.auth.signInWithPassword` / `signUp`
-2. **OAuth**: Google/GitHub via `signInWithOAuth` with `redirectTo: /auth/callback`
-3. **Callback**: `/auth/callback.tsx` exchanges code via `exchangeCodeForSession`
-4. **Session**: `@supabase/ssr` stores session in cookies (HttpOnly, Secure, SameSite=Lax)
-5. **SSR**: Middleware reads cookies, validates session, injects `user` into route context
-6. **Logout**: Server function `signOut` clears cookies
+1. **Sign-in**: The settings dialog calls `signInWithOAuth` for Google and sets the current
+   browser origin's `/auth/callback` as `redirectTo`.
+2. **Callback**: `/auth/callback.tsx` waits for the browser Supabase client to process the PKCE
+   code, then navigates to the dashboard. Login and signup pages are not used.
+3. **Session**: `@supabase/ssr` persists the session using browser cookies.
+4. **Logout**: The settings dialog calls `supabase.auth.signOut()`.
+
+In Supabase **Authentication > URL Configuration**, set the production Site URL to
+`https://studytime.pablolabs.com.ar` and add both
+`https://studytime.pablolabs.com.ar/auth/callback` and
+`http://localhost:8080/auth/callback` to the allowed Redirect URLs. The production callback
+must be allow-listed; otherwise Supabase may fall back to its configured Site URL.
 
 ### Client-Side Auth State
 
@@ -166,10 +172,6 @@ All tables added to `supabase_realtime` publication for live sync (optional).
 
 - Subscribes to `onAuthStateChange`
 - Exposes `useAuth()` hook: `{ user, loading, signOut }`
-
-### Protected Routes
-
-`src/components/auth/require-auth.tsx` — root route wrapper that redirects to `/auth/login` if no user.
 
 ### Repository & Queries
 

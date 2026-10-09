@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { useState } from "react";
 
 interface AuthCallbackSearch {
   code?: string;
@@ -19,6 +20,7 @@ function AuthCallback() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth/callback" }) as AuthCallbackSearch;
   const next = search.next || "/";
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -26,15 +28,12 @@ function AuthCallback() {
     const completeSignIn = async () => {
       const authError = search.error_description || search.error;
       if (authError) {
-        navigate({ to: "/auth/login", search: { error: authError } });
+        setErrorMessage(authError);
         return;
       }
 
       if (!search.code || !isSupabaseConfigured()) {
-        navigate({
-          to: "/auth/login",
-          search: { error: "No se pudo completar el inicio de sesión con Google." },
-        });
+        setErrorMessage("No se pudo completar el inicio de sesión con Google.");
         return;
       }
 
@@ -50,17 +49,12 @@ function AuthCallback() {
         if (active) navigate({ to: next, replace: true });
       } catch (error) {
         console.error("Auth callback error:", error);
-        if (active) {
-          navigate({
-            to: "/auth/login",
-            search: {
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "No se pudo completar el inicio de sesión con Google.",
-            },
-          });
-        }
+        if (active)
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : "No se pudo completar el inicio de sesión con Google.",
+          );
       }
     };
 
@@ -74,8 +68,25 @@ function AuthCallback() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto" />
-        <p className="mt-4 text-muted-foreground">Completando inicio de sesión...</p>
+        {errorMessage ? (
+          <>
+            <h1 className="text-xl font-semibold text-foreground">No se pudo iniciar sesión</h1>
+            <p className="mt-2 text-sm text-destructive" role="alert">
+              {errorMessage}
+            </p>
+            <Link
+              to="/"
+              className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Volver al dashboard
+            </Link>
+          </>
+        ) : (
+          <>
+            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <p className="mt-4 text-muted-foreground">Completando inicio de sesión...</p>
+          </>
+        )}
       </div>
     </div>
   );
